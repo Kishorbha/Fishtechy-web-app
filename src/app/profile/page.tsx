@@ -44,23 +44,52 @@ export default function ProfilePage() {
       <div className="w-full max-w-md">
         <div className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-lg p-6 shadow-lg dark:shadow-none">
           <div className="text-center mb-6">
-            <div className="flex items-center justify-center mb-4">
-              <div className="bg-gradient-to-r from-blue-500 to-cyan-500 p-3 rounded-lg mr-3">
-                <img
-                  src="/assets/logo.svg"
-                  alt="Fishtechy Logo"
-                  className="w-8 h-8"
-                />
-              </div>
-              <div className="text-4xl font-bold text-gray-900 dark:text-white">
-                Fishtechy
+            {/* User Avatar */}
+            <div className="flex justify-center mb-4">
+              <div className="relative">
+                {user.avatar200 || user.avatar ? (
+                  <img
+                    src={user.avatar200 || user.avatar}
+                    alt={user.username}
+                    className="w-24 h-24 rounded-full object-cover border-4 border-gray-200 dark:border-gray-700"
+                  />
+                ) : (
+                  <div className="w-24 h-24 rounded-full bg-gradient-to-br from-blue-500 to-cyan-500 flex items-center justify-center border-4 border-gray-200 dark:border-gray-700">
+                    <span className="text-white text-2xl font-bold">
+                      {user.fullName?.charAt(0) ||
+                        user.username?.charAt(0) ||
+                        "U"}
+                    </span>
+                  </div>
+                )}
+                {/* Edit Avatar Button */}
+                <button className="absolute bottom-0 right-0 w-8 h-8 bg-blue-600 hover:bg-blue-700 rounded-full flex items-center justify-center border-2 border-white dark:border-gray-900 transition-colors">
+                  <svg
+                    className="w-4 h-4 text-white"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M12 6v6m0 0v6m0-6h6m-6 0H6"
+                    />
+                  </svg>
+                </button>
               </div>
             </div>
-            <h1 className="text-2xl font-bold text-gray-900 dark:text-white">
-              Edit Profile
+
+            {/* User Info */}
+            <h1 className="text-2xl font-bold text-gray-900 dark:text-white mb-1">
+              {user.fullName || user.username}
             </h1>
-            <p className="text-gray-600 dark:text-gray-400">
-              Update your profile information
+            <p className="text-gray-600 dark:text-gray-400 mb-4">
+              @{user.username}
+            </p>
+            <p className="text-sm text-gray-500 dark:text-gray-500">
+              Edit your profile information below
             </p>
           </div>
 

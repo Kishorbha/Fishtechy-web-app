@@ -8,14 +8,12 @@ import {
   Home,
   Search,
   Compass,
-  Play,
   MessageCircle,
   Heart,
   PlusSquare,
   User,
   Menu,
   Settings,
-  LogOut,
   X,
   Bookmark,
   Moon,
@@ -68,12 +66,7 @@ export function LeftSidebar({ user }: LeftSidebarProps) {
       label: "Explore",
       active: pathname === "/explore",
     },
-    {
-      href: "/reels",
-      icon: Play,
-      label: "Reels",
-      active: pathname === "/reels",
-    },
+
     {
       href: "/messages",
       icon: MessageCircle,
@@ -155,13 +148,12 @@ export function LeftSidebar({ user }: LeftSidebarProps) {
                   <img
                     src="/assets/logo.svg"
                     alt="Fishtechy Logo"
-                    className="w-16 h-16 group-hover:scale-110 transition-transform duration-300"
+                    className="w-20 h-20 group-hover:scale-110 transition-transform duration-300"
                   />
                 </div>
               </div>
             </Link>
           </div>
-
           {/* Navigation */}
           <nav className="flex-1 px-6 py-2">
             <div className="space-y-1">
@@ -209,37 +201,6 @@ export function LeftSidebar({ user }: LeftSidebarProps) {
               })}
             </div>
           </nav>
-
-          {/* User Profile */}
-          {user && (
-            <div className="px-6 py-4">
-              <div
-                className="flex items-center space-x-3 p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800/50 transition-all duration-200 group cursor-pointer"
-                onClick={() => setIsMobileMenuOpen(false)}
-              >
-                <div className="relative w-8 h-8 rounded-full overflow-hidden">
-                  {user.avatar ? (
-                    <img
-                      src={user.avatar}
-                      alt={user.username}
-                      className="w-full h-full object-cover"
-                    />
-                  ) : (
-                    <div className="w-full h-full bg-gradient-to-br from-blue-500 to-cyan-500 flex items-center justify-center">
-                      <span className="text-white text-sm font-bold">
-                        {user.fullName?.charAt(0) || "U"}
-                      </span>
-                    </div>
-                  )}
-                </div>
-                <div className="flex-1 min-w-0">
-                  <p className="text-sm font-normal text-gray-900 dark:text-white truncate">
-                    {user.username}
-                  </p>
-                </div>
-              </div>
-            </div>
-          )}
 
           {/* More */}
           <div className="px-6 py-2">
