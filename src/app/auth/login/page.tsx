@@ -6,7 +6,6 @@ import { useAuth } from "@/hooks/useAuth";
 import { Form, FormField, FormButton } from "@/components/ui/Form";
 import { loginSchema } from "@/lib/validations";
 import { LoadingSpinner } from "@/components/ui/spinner";
-import { ThemeToggle } from "@/components/ui/ThemeToggle";
 
 interface LoginFormData {
   email: string;
@@ -30,13 +29,6 @@ export default function LoginPage() {
 
   return (
     <main className="min-h-screen bg-white dark:bg-black flex items-center justify-center p-4">
-      {/* Theme Toggle - Top Right */}
-      <div className="fixed top-4 right-4 z-50">
-        <div className="bg-white dark:bg-gray-800 rounded-lg shadow-lg border border-gray-200 dark:border-gray-700 p-2">
-          <ThemeToggle />
-        </div>
-      </div>
-
       <div className="w-full max-w-md">
         <div className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-lg p-6 shadow-lg dark:shadow-none">
           <div className="text-center mb-6">

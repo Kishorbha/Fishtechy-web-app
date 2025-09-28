@@ -43,7 +43,6 @@ export function RightSidebar() {
   const handleFollow = (userId: string) => {
     setSuggestions((prev) => prev.filter((user) => user.id !== userId));
   };
-  console.log(user);
   return (
     <motion.aside
       initial={{ x: 300, opacity: 0 }}

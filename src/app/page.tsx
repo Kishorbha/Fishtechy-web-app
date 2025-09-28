@@ -7,7 +7,6 @@ import { PostsFeed } from "@/components/PostsFeed";
 import { LeftSidebar } from "@/components/LeftSidebar";
 import { RightSidebar } from "@/components/RightSidebar";
 import { LoadingSpinner } from "@/components/ui/spinner";
-import { ThemeToggle } from "@/components/ui/ThemeToggle";
 
 export default function Home() {
   const { isAuthenticated, isLoading, user } = useAuth();
@@ -33,13 +32,6 @@ export default function Home() {
 
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-black">
-      {/* Theme Toggle - Top Right */}
-      <div className="fixed top-4 right-4 z-50">
-        <div className="bg-white dark:bg-gray-800 rounded-lg shadow-lg border border-gray-200 dark:border-gray-700 p-2">
-          <ThemeToggle />
-        </div>
-      </div>
-
       {/* Main Content */}
       <div className="max-w-6xl mx-auto px-4 py-8">
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">

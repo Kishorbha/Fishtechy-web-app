@@ -43,7 +43,7 @@ class ApiClient {
       accessToken: string;
       refreshToken: string;
       user: User;
-    }>("/v1/auth/login", {
+    }>("/auth/login", {
       method: "POST",
       body: JSON.stringify({ email, password }),
     });
@@ -61,7 +61,7 @@ class ApiClient {
       accessToken: string;
       refreshToken: string;
       user: User;
-    }>("/v1/auth/register", {
+    }>("/auth/register", {
       method: "POST",
       body: JSON.stringify({
         email: userData.email,
@@ -88,7 +88,7 @@ class ApiClient {
 
   // User methods
   async getProfile() {
-    return this.request<User>("/v1/users/me");
+    return this.request<User>("/users/me");
   }
 
   async updateProfile(profileData: {
@@ -98,7 +98,7 @@ class ApiClient {
     bio?: string;
     profilePicture?: string;
   }) {
-    return this.request<User>("/v1/users/me", {
+    return this.request<User>("/users/me", {
       method: "PUT",
       body: JSON.stringify({
         fullName:
@@ -120,7 +120,7 @@ class ApiClient {
       totalDocs: number;
       hasNextPage: boolean;
       hasPrevPage: boolean;
-    }>(`/v1/users/search?username=${username}`);
+    }>(`/users/search?username=${username}`);
   }
 
   async followUser(userId: string) {
@@ -128,7 +128,7 @@ class ApiClient {
       success: boolean;
       isFollowing: boolean;
       followersCount: number;
-    }>(`/v1/users/${userId}/follow`, {
+    }>(`/users/${userId}/follow`, {
       method: "POST",
     });
   }
@@ -144,7 +144,7 @@ class ApiClient {
       hasNextPage: boolean;
       hasPrevPage: boolean;
     }>(
-      `/v1/feeds/explore?page=${page}&limit=${limit}&includeFields=medias,user.avatar200,user.fullName,user.username,fish.name,likes,comments,moderationStatus,user.avatar,createdAt`
+      `/feeds/explore?page=${page}&limit=${limit}&includeFields=medias,user.avatar200,user.fullName,user.username,fish.name,likes,comments,moderationStatus,user.avatar,createdAt`
     );
   }
 
@@ -153,7 +153,7 @@ class ApiClient {
     imageUrl: string;
     location?: string;
   }) {
-    return this.request<Post>("/v1/catches", {
+    return this.request<Post>("/catches", {
       method: "POST",
       body: JSON.stringify({
         note: postData.caption,
@@ -179,7 +179,7 @@ class ApiClient {
   async likePost(postId: string) {
     return this.request<{
       success: boolean;
-    }>(`/v1/feeds/${postId}/likes`, {
+    }>(`/feeds/${postId}/likes`, {
       method: "POST",
     });
   }
@@ -188,7 +188,7 @@ class ApiClient {
   async getVideoUrl(key: string) {
     return this.request<{
       url: string;
-    }>(`/v1/files-optimized/video-url?key=${encodeURIComponent(key)}`);
+    }>(`/files-optimized/video-url?key=${encodeURIComponent(key)}`);
   }
 
   async getVideoMetadata(key: string) {
@@ -198,13 +198,13 @@ class ApiClient {
       format: string;
       bitrate: number;
       resolution: string;
-    }>(`/v1/files-optimized/video-metadata?key=${encodeURIComponent(key)}`);
+    }>(`/files-optimized/video-metadata?key=${encodeURIComponent(key)}`);
   }
 
   async getVideoThumbnail(key: string, time: string = "00:00:01") {
     return `${
       this.baseURL
-    }/v1/files-optimized/video-thumbnail?key=${encodeURIComponent(
+    }/files-optimized/video-thumbnail?key=${encodeURIComponent(
       key
     )}&time=${time}`;
   }
@@ -212,9 +212,46 @@ class ApiClient {
   async getVideoPreview(key: string, quality: string = "medium") {
     return `${
       this.baseURL
-    }/v1/files-optimized/video-preview?key=${encodeURIComponent(
+    }/files-optimized/video-preview?key=${encodeURIComponent(
       key
     )}&quality=${quality}`;
+  }
+
+  // Notification methods
+  async getNotifications(page: number = 1, limit: number = 20) {
+    return this.request<{
+      results: Notification[];
+      page: number;
+      limit: number;
+      totalPages: number;
+      totalDocs: number;
+      hasNextPage: boolean;
+      hasPrevPage: boolean;
+    }>(
+      `/notifications?page=${page}&limit=${limit}&sortBy=createdAt&sortOrder=asc`
+    );
+  }
+
+  async getUnreadNotificationCount() {
+    return this.request<number>("/notifications/unread");
+  }
+
+  async markAllNotificationsAsRead() {
+    return this.request<{
+      success: boolean;
+    }>("/notifications/read", {
+      method: "PATCH",
+    });
+  }
+
+  async markNotificationAsRead(notificationId: string) {
+    return this.request<Notification>("/notifications/read", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ notificationId }),
+    });
   }
 
   // Health check
@@ -227,6 +264,63 @@ class ApiClient {
 }
 
 // Types (adapted for Node API)
+export interface Notification {
+  id: string;
+  type: string;
+  read: boolean;
+  sender?: {
+    id: string;
+    fullName: string;
+    username: string;
+    avatar?: string;
+    avatar200?: string;
+    friendshipStatus?: {
+      following: boolean;
+      followedBy: boolean;
+      outgoingRequest: boolean;
+      incomingRequest: boolean;
+    };
+  };
+  catches?: {
+    id: string;
+    medias?: Array<{
+      fileType: string;
+      url: string;
+      thumbnail?: string;
+    }>;
+    ownershipRequested?: boolean;
+    comments?: number;
+  };
+  comment?: {
+    id: string;
+    reactions?: number;
+    replies?: number;
+  };
+  feedback?: {
+    id: string;
+    type: string;
+    status: string;
+    medias?: Array<{
+      fileType: string;
+      url: string;
+      thumbnail?: string;
+    }>;
+  };
+  team?: any;
+  challenge?: any;
+  transaction?: {
+    amount: number;
+    fee: number;
+    service: number;
+    rate: number;
+    originalCurrency: string;
+  };
+  request?: string;
+  challengeTeamId?: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
 export interface User {
   id: string;
   email: string;

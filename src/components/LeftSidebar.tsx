@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useAuth } from "@/hooks/useAuth";
+import { useState } from "react";
 import {
   Home,
   Search,
@@ -15,10 +16,19 @@ import {
   Menu,
   Settings,
   LogOut,
+  X,
+  Bookmark,
+  Moon,
+  AlertCircle,
+  FileText,
+  Users,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { motion } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
 import { cn } from "@/lib/utils";
+import { useQuery } from "@tanstack/react-query";
+import { apiClient } from "@/lib/api";
+import { useTheme } from "@/contexts/ThemeContext";
 
 interface LeftSidebarProps {
   user?: {
@@ -31,7 +41,18 @@ interface LeftSidebarProps {
 
 export function LeftSidebar({ user }: LeftSidebarProps) {
   const pathname = usePathname();
-  const { logout } = useAuth();
+  const { logout, isAuthenticated } = useAuth();
+  const { theme, setTheme } = useTheme();
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const [isMoreModalOpen, setIsMoreModalOpen] = useState(false);
+
+  // Fetch unread notification count
+  const { data: unreadCount } = useQuery({
+    queryKey: ["unread-notifications"],
+    queryFn: () => apiClient.getUnreadNotificationCount(),
+    enabled: isAuthenticated,
+    refetchInterval: 30000, // Refetch every 30 seconds
+  });
 
   const navigationItems = [
     { href: "/", icon: Home, label: "Home", active: pathname === "/" },
@@ -80,128 +101,277 @@ export function LeftSidebar({ user }: LeftSidebarProps) {
   ];
 
   return (
-    <motion.div
-      initial={{ x: -300, opacity: 0 }}
-      animate={{ x: 0, opacity: 1 }}
-      transition={{ duration: 0.5 }}
-      className="hidden lg:block fixed left-0 top-0 h-full w-72 bg-white dark:bg-gradient-to-b dark:from-gray-900 dark:via-black dark:to-gray-900 border-r border-gray-200 dark:border-gray-700/50 z-40 backdrop-blur-sm"
-    >
-      <div className="flex flex-col h-full">
-        {/* Logo Section */}
-        <div className="p-6 pb-8">
-          <Link href="/" className="flex items-center justify-center group">
-            <div className="relative">
-              <div className="absolute inset-0 bg-gradient-to-r from-blue-500/20 to-cyan-500/20 rounded-2xl blur-lg group-hover:blur-xl transition-all duration-300"></div>
-              <div className="relative bg-white dark:bg-gradient-to-br dark:from-gray-800 dark:to-gray-900 p-4 rounded-2xl transition-all duration-300">
-                <img
-                  src="/assets/logo.svg"
-                  alt="Fishtechy Logo"
-                  className="w-20 h-20 group-hover:scale-110 transition-transform duration-300"
-                />
-              </div>
-            </div>
-          </Link>
-        </div>
+    <>
+      {/* Mobile Menu Button */}
+      <div className="lg:hidden fixed top-4 left-4 z-50">
+        <Button
+          variant="ghost"
+          size="sm"
+          onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+          className="bg-white dark:bg-gray-800 shadow-lg border border-gray-200 dark:border-gray-700"
+        >
+          {isMobileMenuOpen ? (
+            <X className="w-5 h-5" />
+          ) : (
+            <Menu className="w-5 h-5" />
+          )}
+        </Button>
+      </div>
 
-        {/* Navigation */}
-        <nav className="flex-1 px-4 py-2">
-          <div className="space-y-2">
-            {navigationItems.map((item) => {
-              const Icon = item.icon;
-              return (
-                <Link key={item.href} href={item.href} prefetch={true}>
-                  <Button
-                    variant="ghost"
-                    className={cn(
-                      "w-full justify-start h-14 px-4 transition-all duration-300 group relative overflow-hidden",
-                      item.active
-                        ? "bg-gradient-to-r from-blue-500/20 to-cyan-500/20 text-gray-900 dark:text-white font-semibold border border-blue-500/30 shadow-lg shadow-blue-500/10"
-                        : "text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800/50 hover:text-gray-900 dark:hover:text-white hover:border-gray-300 dark:hover:border-gray-600/50 border border-transparent"
-                    )}
-                  >
-                    {item.active && (
-                      <div className="absolute inset-0 bg-gradient-to-r from-blue-500/10 to-cyan-500/10"></div>
-                    )}
-                    <div className="relative flex items-center">
-                      <Icon
-                        className={cn(
-                          "w-6 h-6 mr-4 transition-all duration-300",
-                          item.active
-                            ? "text-blue-400"
-                            : "group-hover:text-blue-400"
-                        )}
-                      />
-                      <span className="text-sm font-medium">{item.label}</span>
-                    </div>
-                  </Button>
-                </Link>
-              );
-            })}
-          </div>
-        </nav>
+      {/* Mobile Overlay */}
+      <AnimatePresence>
+        {isMobileMenuOpen && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.2 }}
+            className="lg:hidden fixed inset-0 bg-black/50 z-40"
+            onClick={() => setIsMobileMenuOpen(false)}
+          />
+        )}
+      </AnimatePresence>
 
-        {/* User Profile */}
-        {user && (
-          <div className="px-4 py-4">
-            <div className="flex items-center space-x-3 p-3 rounded-xl bg-gray-100 dark:bg-gradient-to-r dark:from-gray-800/50 dark:to-gray-700/30 border border-gray-200 dark:border-gray-600/30 hover:border-blue-500/30 transition-all duration-300 group cursor-pointer">
+      {/* Sidebar */}
+      <motion.div
+        initial={{ x: -300, opacity: 0 }}
+        animate={{ x: 0, opacity: 1 }}
+        transition={{ duration: 0.5 }}
+        className={cn(
+          "fixed left-0 top-0 h-full w-72 bg-white dark:bg-gradient-to-b dark:from-gray-900 dark:via-black dark:to-gray-900 border-r border-gray-200 dark:border-gray-700/50 z-50 backdrop-blur-sm",
+          "lg:translate-x-0",
+          isMobileMenuOpen
+            ? "translate-x-0"
+            : "-translate-x-full lg:translate-x-0"
+        )}
+      >
+        <div className="flex flex-col h-full">
+          {/* Logo Section */}
+          <div className="px-6 py-8 pb-6">
+            <Link href="/" className="flex items-center group">
               <div className="relative">
-                <div className="absolute inset-0 bg-gradient-to-r from-blue-500 to-cyan-500 rounded-full blur-sm opacity-50 group-hover:opacity-75 transition-opacity duration-300"></div>
-                <div className="relative w-10 h-10 rounded-full bg-gradient-to-br from-blue-500 to-cyan-500 flex items-center justify-center border-2 border-gray-300 dark:border-gray-700 group-hover:border-blue-400 transition-colors duration-300">
+                <div className="absolute inset-0 bg-gradient-to-r from-blue-500/20 to-cyan-500/20 rounded-2xl blur-lg group-hover:blur-xl transition-all duration-300"></div>
+                <div className="relative bg-white dark:bg-gradient-to-br dark:from-gray-800 dark:to-gray-900 p-3 rounded-2xl transition-all duration-300">
+                  <img
+                    src="/assets/logo.svg"
+                    alt="Fishtechy Logo"
+                    className="w-16 h-16 group-hover:scale-110 transition-transform duration-300"
+                  />
+                </div>
+              </div>
+            </Link>
+          </div>
+
+          {/* Navigation */}
+          <nav className="flex-1 px-6 py-2">
+            <div className="space-y-1">
+              {navigationItems.map((item) => {
+                const Icon = item.icon;
+                return (
+                  <Link
+                    key={item.href}
+                    href={item.href}
+                    prefetch={true}
+                    onClick={() => setIsMobileMenuOpen(false)}
+                  >
+                    <Button
+                      variant="ghost"
+                      className={cn(
+                        "w-full justify-start h-12 px-3 py-3 transition-all duration-200 group relative overflow-hidden rounded-lg",
+                        item.active
+                          ? "text-gray-900 dark:text-white font-semibold"
+                          : "text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800/50 hover:text-gray-900 dark:hover:text-white"
+                      )}
+                    >
+                      <div className="relative flex items-center">
+                        <Icon
+                          className={cn(
+                            "w-6 h-6 mr-4 transition-all duration-200",
+                            item.active
+                              ? "text-gray-900 dark:text-white"
+                              : "group-hover:text-gray-900 dark:group-hover:text-white"
+                          )}
+                        />
+                        <span className="text-base font-normal">
+                          {item.label}
+                        </span>
+                        {item.href === "/notifications" &&
+                          unreadCount &&
+                          unreadCount > 0 && (
+                            <span className="ml-auto bg-red-500 text-white text-xs px-2 py-0.5 rounded-full min-w-[20px] text-center">
+                              {unreadCount > 99 ? "99+" : unreadCount}
+                            </span>
+                          )}
+                      </div>
+                    </Button>
+                  </Link>
+                );
+              })}
+            </div>
+          </nav>
+
+          {/* User Profile */}
+          {user && (
+            <div className="px-6 py-4">
+              <div
+                className="flex items-center space-x-3 p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800/50 transition-all duration-200 group cursor-pointer"
+                onClick={() => setIsMobileMenuOpen(false)}
+              >
+                <div className="relative w-8 h-8 rounded-full overflow-hidden">
                   {user.avatar ? (
                     <img
                       src={user.avatar}
                       alt={user.username}
-                      className="w-full h-full rounded-full object-cover"
+                      className="w-full h-full object-cover"
                     />
                   ) : (
-                    <span className="text-white text-sm font-bold">
-                      {user.fullName?.charAt(0) || "U"}
-                    </span>
+                    <div className="w-full h-full bg-gradient-to-br from-blue-500 to-cyan-500 flex items-center justify-center">
+                      <span className="text-white text-sm font-bold">
+                        {user.fullName?.charAt(0) || "U"}
+                      </span>
+                    </div>
                   )}
                 </div>
-              </div>
-              <div className="flex-1 min-w-0">
-                <p className="text-sm font-semibold text-gray-900 dark:text-white truncate group-hover:text-blue-600 dark:group-hover:text-blue-300 transition-colors duration-300">
-                  {user.username}
-                </p>
-                <p className="text-xs text-gray-600 dark:text-gray-400 truncate group-hover:text-gray-700 dark:group-hover:text-gray-300 transition-colors duration-300">
-                  {user.fullName}
-                </p>
+                <div className="flex-1 min-w-0">
+                  <p className="text-sm font-normal text-gray-900 dark:text-white truncate">
+                    {user.username}
+                  </p>
+                </div>
               </div>
             </div>
+          )}
+
+          {/* More */}
+          <div className="px-6 py-2">
+            <Button
+              variant="ghost"
+              onClick={() => {
+                setIsMobileMenuOpen(false);
+                setIsMoreModalOpen(true);
+              }}
+              className="w-full justify-start h-12 px-3 py-3 text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800/50 hover:text-gray-900 dark:hover:text-white transition-all duration-200 group rounded-lg"
+            >
+              <Menu className="w-6 h-6 mr-4 group-hover:text-gray-900 dark:group-hover:text-white transition-colors duration-200" />
+              <span className="text-base font-normal">More</span>
+            </Button>
           </div>
+        </div>
+      </motion.div>
+
+      {/* More Modal - Instagram Style */}
+      <AnimatePresence>
+        {isMoreModalOpen && (
+          <>
+            {/* Modal Overlay */}
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              transition={{ duration: 0.15 }}
+              className="fixed inset-0 z-[60]"
+              onClick={() => setIsMoreModalOpen(false)}
+            />
+
+            {/* Modal Content - Positioned like Instagram */}
+            <motion.div
+              initial={{ opacity: 0, scale: 0.95, y: -5 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.95, y: -5 }}
+              transition={{ duration: 0.15 }}
+              className="fixed bottom-20 left-4 lg:bottom-24 lg:left-4 z-[70] w-64 bg-gray-800 dark:bg-gray-900 rounded-xl shadow-2xl border border-gray-700 dark:border-gray-600 overflow-hidden"
+            >
+              {/* Modal Content */}
+              <div className="py-2">
+                <Button
+                  variant="ghost"
+                  onClick={() => {
+                    setIsMoreModalOpen(false);
+                    // Add settings navigation here
+                  }}
+                  className="w-full justify-start h-12 px-4 text-white hover:bg-gray-700 dark:hover:bg-gray-800 transition-colors duration-150"
+                >
+                  <Settings className="w-5 h-5 mr-3" />
+                  <span className="text-sm">Settings</span>
+                </Button>
+
+                <Button
+                  variant="ghost"
+                  onClick={() => {
+                    setIsMoreModalOpen(false);
+                    // Add your activity navigation here
+                  }}
+                  className="w-full justify-start h-12 px-4 text-white hover:bg-gray-700 dark:hover:bg-gray-800 transition-colors duration-150"
+                >
+                  <FileText className="w-5 h-5 mr-3" />
+                  <span className="text-sm">Your Activity</span>
+                </Button>
+
+                <Button
+                  variant="ghost"
+                  onClick={() => {
+                    setIsMoreModalOpen(false);
+                    // Add saved navigation here
+                  }}
+                  className="w-full justify-start h-12 px-4 text-white hover:bg-gray-700 dark:hover:bg-gray-800 transition-colors duration-150"
+                >
+                  <Bookmark className="w-5 h-5 mr-3" />
+                  <span className="text-sm">Saved</span>
+                </Button>
+
+                <Button
+                  variant="ghost"
+                  onClick={() => {
+                    setIsMoreModalOpen(false);
+                    setTheme(theme === "dark" ? "light" : "dark");
+                  }}
+                  className="w-full justify-start h-12 px-4 text-white hover:bg-gray-700 dark:hover:bg-gray-800 transition-colors duration-150"
+                >
+                  <Moon className="w-5 h-5 mr-3" />
+                  <span className="text-sm">Switch appearance</span>
+                </Button>
+
+                <Button
+                  variant="ghost"
+                  onClick={() => {
+                    setIsMoreModalOpen(false);
+                    // Add report problem here
+                  }}
+                  className="w-full justify-start h-12 px-4 text-white hover:bg-gray-700 dark:hover:bg-gray-800 transition-colors duration-150"
+                >
+                  <AlertCircle className="w-5 h-5 mr-3" />
+                  <span className="text-sm">Report a problem</span>
+                </Button>
+
+                {/* Separator */}
+                <div className="border-t border-gray-700 dark:border-gray-600 my-1" />
+
+                <Button
+                  variant="ghost"
+                  onClick={() => {
+                    setIsMoreModalOpen(false);
+                    // Add switch accounts here
+                  }}
+                  className="w-full justify-start h-12 px-4 text-white hover:bg-gray-700 dark:hover:bg-gray-800 transition-colors duration-150"
+                >
+                  <Users className="w-5 h-5 mr-3" />
+                  <span className="text-sm">Switch accounts</span>
+                </Button>
+
+                <Button
+                  variant="ghost"
+                  onClick={() => {
+                    setIsMoreModalOpen(false);
+                    logout();
+                  }}
+                  className="w-full justify-start h-12 px-4 text-white hover:bg-gray-700 dark:hover:bg-gray-800 transition-colors duration-150"
+                >
+                  <span className="text-sm">Log out</span>
+                </Button>
+              </div>
+            </motion.div>
+          </>
         )}
-
-        {/* More */}
-        <div className="px-4 py-2">
-          <Button
-            variant="ghost"
-            className="w-full justify-start h-14 px-4 text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800/50 hover:text-gray-900 dark:hover:text-white hover:border-gray-300 dark:hover:border-gray-600/50 border border-transparent transition-all duration-300 group"
-          >
-            <Menu className="w-6 h-6 mr-4 group-hover:text-blue-400 transition-colors duration-300" />
-            <span className="text-sm font-medium">More</span>
-          </Button>
-        </div>
-
-        {/* Settings & Logout */}
-        <div className="px-4 py-4 pb-6 space-y-2">
-          <Button
-            variant="ghost"
-            className="w-full justify-start h-12 px-4 text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800/50 hover:text-gray-900 dark:hover:text-white hover:border-gray-300 dark:hover:border-gray-600/50 border border-transparent transition-all duration-300 group"
-          >
-            <Settings className="w-5 h-5 mr-4 group-hover:text-blue-400 transition-colors duration-300" />
-            <span className="text-sm font-medium">Settings</span>
-          </Button>
-          <Button
-            variant="ghost"
-            onClick={logout}
-            className="w-full justify-start h-12 px-4 text-gray-600 dark:text-gray-400 hover:bg-red-500/20 hover:text-red-400 hover:border-red-500/30 border border-transparent transition-all duration-300 group"
-          >
-            <LogOut className="w-5 h-5 mr-4 group-hover:text-red-400 transition-colors duration-300" />
-            <span className="text-sm font-medium">Logout</span>
-          </Button>
-        </div>
-      </div>
-    </motion.div>
+      </AnimatePresence>
+    </>
   );
 }
