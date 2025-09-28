@@ -249,3 +249,4 @@ This project is licensed under the MIT License.
 ---
 
 **Built with ❤️ using Next.js 15, Node.js, and modern web technologies.**
+# Fishtechy-web-app
