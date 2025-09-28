@@ -41,15 +41,12 @@ export default function LoginPage() {
         <div className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-lg p-6 shadow-lg dark:shadow-none">
           <div className="text-center mb-6">
             <div className="flex items-center justify-center mb-4">
-              <div className="bg-gradient-to-r from-blue-500 to-cyan-500 p-3 rounded-lg mr-3">
+              <div className=" p-3 rounded-lg mr-3">
                 <img
                   src="/assets/logo.svg"
                   alt="Fishtechy Logo"
-                  className="w-8 h-8"
+                  className="w-full h-full"
                 />
-              </div>
-              <div className="text-4xl font-bold text-gray-900 dark:text-white">
-                Fishtechy
               </div>
             </div>
             <h1 className="text-2xl font-bold text-gray-900 dark:text-white">

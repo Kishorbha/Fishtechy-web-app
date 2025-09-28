@@ -43,7 +43,7 @@ class ApiClient {
       accessToken: string;
       refreshToken: string;
       user: User;
-    }>("/auth/login", {
+    }>("/v1/auth/login", {
       method: "POST",
       body: JSON.stringify({ email, password }),
     });
@@ -61,7 +61,7 @@ class ApiClient {
       accessToken: string;
       refreshToken: string;
       user: User;
-    }>("/auth/register", {
+    }>("/v1/auth/register", {
       method: "POST",
       body: JSON.stringify({
         email: userData.email,
@@ -74,18 +74,21 @@ class ApiClient {
 
   async refreshToken(refreshToken: string) {
     return this.request<{
-      success: boolean;
       accessToken: string;
       refreshToken: string;
-    }>("/auth/refresh-token", {
-      method: "POST",
-      body: JSON.stringify({ refreshToken }),
+      accessTokenExpiry: string;
+      refreshTokenExpiry: string;
+    }>("/v1/auth/refresh-token", {
+      method: "GET",
+      headers: {
+        Authorization: `Bearer ${refreshToken}`,
+      },
     });
   }
 
   // User methods
   async getProfile() {
-    return this.request<User>("/users/me");
+    return this.request<User>("/v1/users/me");
   }
 
   async updateProfile(profileData: {
@@ -95,7 +98,7 @@ class ApiClient {
     bio?: string;
     profilePicture?: string;
   }) {
-    return this.request<User>("/users/me", {
+    return this.request<User>("/v1/users/me", {
       method: "PUT",
       body: JSON.stringify({
         fullName:
@@ -117,7 +120,7 @@ class ApiClient {
       totalDocs: number;
       hasNextPage: boolean;
       hasPrevPage: boolean;
-    }>(`/users/search?username=${username}`);
+    }>(`/v1/users/search?username=${username}`);
   }
 
   async followUser(userId: string) {
@@ -125,7 +128,7 @@ class ApiClient {
       success: boolean;
       isFollowing: boolean;
       followersCount: number;
-    }>(`/users/${userId}/follow`, {
+    }>(`/v1/users/${userId}/follow`, {
       method: "POST",
     });
   }
@@ -141,7 +144,7 @@ class ApiClient {
       hasNextPage: boolean;
       hasPrevPage: boolean;
     }>(
-      `/feeds/explore?page=${page}&limit=${limit}&includeFields=medias,user.avatar200,user.fullName,user.username,fish.name,likes,comments,moderationStatus,user.avatar,createdAt`
+      `/v1/feeds/explore?page=${page}&limit=${limit}&includeFields=medias,user.avatar200,user.fullName,user.username,fish.name,likes,comments,moderationStatus,user.avatar,createdAt`
     );
   }
 
@@ -150,7 +153,7 @@ class ApiClient {
     imageUrl: string;
     location?: string;
   }) {
-    return this.request<Post>("/catches", {
+    return this.request<Post>("/v1/catches", {
       method: "POST",
       body: JSON.stringify({
         note: postData.caption,
@@ -176,7 +179,7 @@ class ApiClient {
   async likePost(postId: string) {
     return this.request<{
       success: boolean;
-    }>(`/feeds/${postId}/likes`, {
+    }>(`/v1/feeds/${postId}/likes`, {
       method: "POST",
     });
   }
@@ -185,7 +188,7 @@ class ApiClient {
   async getVideoUrl(key: string) {
     return this.request<{
       url: string;
-    }>(`/files-optimized/video-url?key=${encodeURIComponent(key)}`);
+    }>(`/v1/files-optimized/video-url?key=${encodeURIComponent(key)}`);
   }
 
   async getVideoMetadata(key: string) {
@@ -195,13 +198,13 @@ class ApiClient {
       format: string;
       bitrate: number;
       resolution: string;
-    }>(`/files-optimized/video-metadata?key=${encodeURIComponent(key)}`);
+    }>(`/v1/files-optimized/video-metadata?key=${encodeURIComponent(key)}`);
   }
 
   async getVideoThumbnail(key: string, time: string = "00:00:01") {
     return `${
       this.baseURL
-    }/files-optimized/video-thumbnail?key=${encodeURIComponent(
+    }/v1/files-optimized/video-thumbnail?key=${encodeURIComponent(
       key
     )}&time=${time}`;
   }
@@ -209,7 +212,7 @@ class ApiClient {
   async getVideoPreview(key: string, quality: string = "medium") {
     return `${
       this.baseURL
-    }/files-optimized/video-preview?key=${encodeURIComponent(
+    }/v1/files-optimized/video-preview?key=${encodeURIComponent(
       key
     )}&quality=${quality}`;
   }
@@ -219,7 +222,7 @@ class ApiClient {
     return this.request<{
       status: string;
       timestamp: string;
-    }>("/webhooks/health");
+    }>("/v1/webhooks/health");
   }
 }
 

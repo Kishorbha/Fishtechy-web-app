@@ -10,9 +10,11 @@ interface TokenData {
 }
 
 interface RefreshResponse {
-  success: boolean;
   accessToken: string;
   refreshToken: string;
+  accessTokenExpiry: string;
+  refreshTokenExpiry: string;
+  user?: any;
 }
 
 class TokenManager {
@@ -153,13 +155,13 @@ class TokenManager {
   ): Promise<TokenData | null> {
     try {
       const response = await fetch(
-        `${process.env.NEXT_PUBLIC_API_URL}/auth/refresh-token`,
+        `${process.env.NEXT_PUBLIC_API_URL}/v1/auth/refresh-token`,
         {
-          method: "POST",
+          method: "GET",
           headers: {
+            Authorization: `Bearer ${refreshToken}`,
             "Content-Type": "application/json",
           },
-          body: JSON.stringify({ refreshToken }),
         }
       );
 
@@ -169,7 +171,7 @@ class TokenManager {
 
       const data: RefreshResponse = await response.json();
 
-      if (data.success && data.accessToken && data.refreshToken) {
+      if (data.accessToken && data.refreshToken) {
         this.setTokens(data.accessToken, data.refreshToken);
         return {
           accessToken: data.accessToken,
